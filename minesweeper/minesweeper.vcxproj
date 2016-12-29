@@ -85,11 +85,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\graphics.cpp" />
+    <ClCompile Include="src\game.cpp" />
+    <ClCompile Include="src\gamegraphics.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\game.h" />
     <ClInclude Include="include\gamegraphics.h" />
-    <ClInclude Include="include\io.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
