@@ -13,6 +13,7 @@ int main()
 
 	graphics.initialization();
 	mainGame.initialization();
+
 	while (graphics.window.isOpen())
 	{
 

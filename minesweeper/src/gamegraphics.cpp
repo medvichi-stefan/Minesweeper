@@ -14,7 +14,7 @@ void GameGraphics::drawScreen(const short int &gameState)
 		this->drawMenu();
 		break;
 	case 0:
-		this->drawBoard();
+		this->drawMap();
 		break;
 	case 1:
 		this->drawSettings();
@@ -46,6 +46,7 @@ void GameGraphics::initialization()
 	this->initializeNightMode();
 	this->initializeFonts();
 	this->initializeMenuText();
+	this->initializeGameBoard();
 	this->initializeSettingsText();
 }
 
@@ -82,9 +83,21 @@ void GameGraphics::initializeMenuText()
 	}
 }
 
+void GameGraphics::initializeGameBoard()
+{
+	this->map.initializeDifficulties();
+
+	this->map.width = 70 * this->videoMode.width / 100;
+	this->map.height = 70 * this->videoMode.height / 100;
+
+	this->map.initializeField();
+}
+
 void GameGraphics::initializeSettingsText()
 {
-	String text[] = { "SETTINGS", "Difficulty:", "Easy (10 mines, 9 x 9 tile grid)", "Medium (40 mines, 16 x 16 tile grid)", "Hard (99 mines, 16 x 30 tile grid)", "Custom:", "Night Mode: ", "ON", "OFF", "Back to main menu" };
+	String text[] = { "SETTINGS", "Difficulty:", "Easy (10 mines, 9 x 9 tile grid)", "Medium (40 mines, 16 x 16 tile grid)",
+					"Hard (99 mines, 16 x 30 tile grid)", "Custom:", "Night Mode: ", "ON", "OFF", "Back to main menu", "Rows",
+					"Columns", "Bombs", "Rows: 9 -> 24", "Columns: 9 -> 30", "Bombs: 10 -> 500" };
 	Color textColor = Color::Black, difficultyTextColor = Color::Green;
 
 	unsigned int currentX, currentY;
@@ -95,22 +108,22 @@ void GameGraphics::initializeSettingsText()
 	}
 
 	currentX = this->videoMode.width / 2 - text[0].getSize()*PIXELS_PER_CHARACTER / 2; currentY = (10 * this->videoMode.height / 2) / 100;
-	this->menuText[1][0] = setText(currentX, currentY, this->fonts[0], text[0], SETTINGS_TITLE_SIZE, textColor);
+	this->menuText[GAME_PART_SETTINGS][0] = setText(currentX, currentY, this->fonts[0], text[0], SETTINGS_TITLE_SIZE, textColor);
 	
 	currentX = 10 * this->videoMode.width / 100;
 	currentY = (50 * this->videoMode.height / 2) / 100;
-	this->menuText[1][1] = setText(currentX, currentY, this->fonts[0], text[1], NORMAL_TEXT_SIZE, textColor);
+	this->menuText[GAME_PART_SETTINGS][1] = setText(currentX, currentY, this->fonts[0], text[1], NORMAL_TEXT_SIZE, textColor);
 
 	int i;
 	for (currentX += 100, i = 0; i < 3; ++i, currentY += 30)
 	{
-		this->textRect[1][i + 2] = setIntRect(currentX, currentY, text[i + 2].getSize() * (NORMAL_TEXT_SIZE - 10), MENU_TEXT_SIZE);
-		this->menuText[1][i + 2] = setText(currentX, currentY, this->fonts[0], text[i + 2], NORMAL_TEXT_SIZE, textColor);
+		this->textRect[GAME_PART_SETTINGS][i + 2] = setIntRect(currentX, currentY, text[i + 2].getSize() * (NORMAL_TEXT_SIZE - 10), MENU_TEXT_SIZE);
+		this->menuText[GAME_PART_SETTINGS][i + 2] = setText(currentX, currentY, this->fonts[0], text[i + 2], NORMAL_TEXT_SIZE, textColor);
 	}
 	this->updateDifficultyText(0);
 
 	currentX -= 100; currentY += 20;
-	this->menuText[1][5] = setText(currentX, currentY, this->fonts[0], text[5], NORMAL_TEXT_SIZE, textColor);
+	this->menuText[GAME_PART_SETTINGS][5] = setText(currentX, currentY, this->fonts[0], text[5], NORMAL_TEXT_SIZE, textColor);
 	
 	Color inputFieldColor = Color::White, outlineInputFieldColor = Color::Black;
 
@@ -119,23 +132,33 @@ void GameGraphics::initializeSettingsText()
 		this->inputFields[i] = setRectangle(currentX, currentY, 70, 30, inputFieldColor, outlineInputFieldColor);
 		this->textBox[i] = setIntRect(currentX, currentY, 70, 30);
 		this->inputFieldFocus[i] = 0;
+
+		this->menuText[GAME_PART_SETTINGS][i + 10] = setText(currentX + 5, currentY - 20, this->fonts[0], text[i + 10], NORMAL_TEXT_SIZE - 5, textColor);
+	}
+
+	currentX = 10 * this->videoMode.width / 100;
+	currentY += 35;
+	
+	for (i = 13; i < 16; ++i, currentX +=  this->menuText[GAME_PART_SETTINGS][i - 1].getString().getSize() * (NORMAL_TEXT_SIZE - 12) )
+	{
+		this->menuText[GAME_PART_SETTINGS][i] = setText(currentX, currentY, this->fonts[0], text[i], NORMAL_TEXT_SIZE - 5, textColor);
 	}
 
 	currentX = 10 * this->videoMode.width / 100;
 	currentY += 50;
-	this->menuText[1][6] = setText(currentX, currentY, this->fonts[0], text[6], NORMAL_TEXT_SIZE, textColor);
+	this->menuText[GAME_PART_SETTINGS][6] = setText(currentX, currentY, this->fonts[0], text[6], NORMAL_TEXT_SIZE, textColor);
 	currentX += 120;
-	this->textRect[1][7] = setIntRect(currentX, currentY, text[7].getSize() * NORMAL_TEXT_SIZE, MENU_TEXT_SIZE);
-	this->menuText[1][7] = setText(currentX, currentY, this->fonts[0], text[7], NORMAL_TEXT_SIZE, textColor);
+	this->textRect[GAME_PART_SETTINGS][7] = setIntRect(currentX, currentY, text[7].getSize() * NORMAL_TEXT_SIZE, MENU_TEXT_SIZE);
+	this->menuText[GAME_PART_SETTINGS][7] = setText(currentX, currentY, this->fonts[0], text[7], NORMAL_TEXT_SIZE, textColor);
 	if (this->nightMode == OFF)
 	{
-		this->textRect[1][7] = setIntRect(currentX, currentY, text[8].getSize() * NORMAL_TEXT_SIZE, MENU_TEXT_SIZE);
-		this->menuText[1][7].setString(text[8]);
+		this->textRect[GAME_PART_SETTINGS][7] = setIntRect(currentX, currentY, text[8].getSize() * NORMAL_TEXT_SIZE, MENU_TEXT_SIZE);
+		this->menuText[GAME_PART_SETTINGS][7].setString(text[8]);
 	}
 
 	currentX = 10 * this->videoMode.width / 100; currentY += 50;
-	this->textRect[1][9] = setIntRect(currentX, currentY, text[9].getSize() * NORMAL_TEXT_SIZE, MENU_TEXT_SIZE);
-	this->menuText[1][9] = setText(currentX, currentY, this->fonts[0], text[9], NORMAL_TEXT_SIZE, textColor);
+	this->textRect[GAME_PART_SETTINGS][9] = setIntRect(currentX, currentY, text[9].getSize() * NORMAL_TEXT_SIZE, MENU_TEXT_SIZE);
+	this->menuText[GAME_PART_SETTINGS][9] = setText(currentX, currentY, this->fonts[0], text[9], NORMAL_TEXT_SIZE, textColor);
 }
 
 void GameGraphics::drawMenu()
@@ -155,7 +178,7 @@ void GameGraphics::drawSettings()
 	for (int i = 0; i < 3; ++i)
 	{
 		this->window.draw(this->inputFields[i]);
-		this->window.draw(this->playerInputSettingsString[i]);
+		this->window.draw(this->playerInputString[i]);
 	}
 	
 }
@@ -165,12 +188,17 @@ void GameGraphics::drawLeaderboard()
 
 }
 
-void GameGraphics::drawBoard()
+void GameGraphics::drawMap()
 {
-
+	this->window.draw(this->map.background);
+	for (int i = 0; i < this->map.width; ++i)
+	{
+		for (int j = 0; j < this->map.height; ++j)
+			this->window.draw(this->map.mapField[i][j].fieldRect);
+	}
 }
 
-void GameGraphics::drawTextOnScreen(const unsigned int &index, const unsigned int &posX, const unsigned int &posY, const String &text, const Font &font, const unsigned int &size, const Color &textColor)
+void GameGraphics::drawTextOnScreen(const unsigned int &index, const unsigned int &posX, const unsigned int &posY, const std::string &text, const Font &font, const unsigned int &size, const Color &textColor)
 {
 	Text textToWrite;
 	textToWrite.setString(text);
@@ -178,7 +206,7 @@ void GameGraphics::drawTextOnScreen(const unsigned int &index, const unsigned in
 	textToWrite.setCharacterSize(size);
 	textToWrite.setFont(font);
 	textToWrite.setFillColor(textColor);
-	this->playerInputSettingsString[index] = textToWrite;
+	this->playerInputString[index] = textToWrite;
 }
 
 void GameGraphics::updateNightMode(const short int &difficulty)
@@ -221,14 +249,88 @@ void GameGraphics::updateDifficultyText(const short int &difficulty)
 
 	for (int i = 2; i <= 5; ++i)
 	{
-		this->menuText[1][i].setFillColor(textColor);
+		this->menuText[GAME_PART_SETTINGS][i].setFillColor(textColor);
 	}
-	this->menuText[1][2 + difficulty].setFillColor(Color::Blue);
+	this->menuText[GAME_PART_SETTINGS][2 + difficulty].setFillColor(Color::Blue);
 }
 void GameGraphics::setMenuTextPosition(unsigned int &posX, unsigned int &posY)
 {
 	posX = this->videoMode.width / 2 - 100;
 	posY = 25 * this->videoMode.height / 100;
+}
+
+void Map::initializeMap(const VideoMode &videoMode)
+{
+
+	unsigned int posX, posY, width, height;
+
+	posX = videoMode.width / 2 - this->width / 2; posY = 100;
+	width = this->width;
+	height = this->height;
+
+	this->background = setRectangle(posX, posY, width, height, Color(COLOR_GREY_LIGHT), Color::Black);
+	this->initializeField();
+}
+
+void Map::initializeDifficulties()
+{
+	this->difficulty = 0;
+	this->predefinedBackgroundSize[0][0] = this->predefinedBackgroundSize[0][1] = 9;
+	this->predefinedBackgroundSize[1][0] = this->predefinedBackgroundSize[1][1] = 16;
+	this->predefinedBackgroundSize[2][0] = 16; this->predefinedBackgroundSize[2][1] = 30;
+}
+
+void Map::initializeField()
+{
+	int rows, columns;
+	unsigned int currentX, currentY, width, height;
+
+	rows = this->predefinedBackgroundSize[this->difficulty][0];
+	columns = this->predefinedBackgroundSize[this->difficulty][1];
+
+	currentX = this->width; currentY = this->height;
+
+	width = PIXELS_WIDTH;
+	height = PIXELS_HEIGHT;
+
+	for (int i = 0; i < rows; ++i, currentX += width)
+	{
+		for (int j = 0; j < columns; ++j, currentY += height)
+		{
+			this->mapField[i][j].initialize(currentX, currentY, width, height);
+		}
+	}
+}
+
+void Map::updateGameBoardSize()
+{
+	if (this->difficulty == 0)
+	{
+		this->width = this->predefinedBackgroundSize[0][0];
+		this->height = this->predefinedBackgroundSize[0][1];
+	}
+	else if (this->difficulty == 1)
+	{
+		this->width = this->predefinedBackgroundSize[1][0];
+		this->height = this->predefinedBackgroundSize[1][1];
+	}
+	else if (this->difficulty == 2)
+	{
+		this->width = this->predefinedBackgroundSize[1][0];
+		this->height = this->predefinedBackgroundSize[2][1];
+	}
+}
+
+void Field::initialize(const unsigned int &posX, const unsigned int &posY, const unsigned int &fieldWidth, const unsigned int &fieldHeight)
+{
+	Color fillColor = Color::Blue;
+	RectangleShape newRect = setRectangle(posX, posY, fieldWidth, fieldHeight, fillColor, Color(COLOR_GREY_LIGHT));
+	Texture newTexture;
+	Sprite newSprite;
+	
+	this->hasBomb = false;
+	this->covered = true;
+	this->fieldRect = newRect;
 }
 
 IntRect setIntRect(const unsigned int &posX, const unsigned int &posY, const unsigned int &width, const unsigned int &height)
