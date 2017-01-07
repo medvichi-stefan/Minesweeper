@@ -8,16 +8,28 @@ Map map;
 
 int main() 
 {	
+	char playerInput[16];
+	short gameState;
+
 	initializeConsole();
-	map.setSize(24, 30);
+	map.setSize(24, 30, 10);
 	map.initialize();
-	map.print(35, 5);
 
-	bool quit = false;
+	bool finished = false;
 
-	while (quit == false)
+	gameState = 0;
+	while (!finished)
 	{
-		Sleep(1500);
+		if (gameState == 0)
+		{
+			map.printOnScreen();
+			map.processInput();
+		}
+		else
+		{
+			printOnScreen(gameState);
+		}
 	}
+
 	return 0;
 }

@@ -24,11 +24,27 @@ void clearConsole()
 	if (GetConsoleScreenBufferInfo(hStdOut, &csbi))
 	{
 		// 32 = space
-		FillConsoleOutputCharacter(hStdOut, (TCHAR)32, csbi.dwSize.X * csbi.dwSize.Y, coord, &count);
+		FillConsoleOutputCharacter(hStdOut, (CHAR)32, csbi.dwSize.X * csbi.dwSize.Y, coord, &count);
 		FillConsoleOutputAttribute(hStdOut, csbi.wAttributes, csbi.dwSize.X * csbi.dwSize.Y, coord, &count);
 		SetConsoleCursorPosition(hStdOut, coord);
 	}
 	return;
+}
+
+void printOnScreen(const short &gameState)
+{
+	switch (gameState)
+	{
+	case 1:
+		writeMainMenu();
+		break;
+	case 2:
+		writeSettingsMenu();
+		break;
+	case 3:
+		writeLeaderboard();
+		break;
+	}
 }
 
 void getWindowSize(int &rows, int &columns)
@@ -98,7 +114,35 @@ void setTextColor(const int &color)
 	SetConsoleTextAttribute(hStdOut, color);
 }
 
+void readPlayerInput(char *playerInput, const int &inputSizeLimit)
+{
+	cin.getline(playerInput, INPUT_SIZE);
+	cin.clear();
+	//cin.ignore((numeric_limits<streamsize>::max)(), '\n');
+}
+
+unsigned short getNumberFromString(const char *string)
+{
+	unsigned short number = 0;
+
+	for (int i = 0; string[i]; ++i)
+	{
+		number = number * 10 + string[i] - '0';
+	}
+	return number;
+}
+
 void writeMainMenu()
+{
+
+}
+
+void writeSettingsMenu()
+{
+
+}
+
+void writeLeaderboard()
 {
 
 }
