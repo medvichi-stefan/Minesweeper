@@ -1,6 +1,5 @@
 #include "include/stdafx.h"
-
-using namespace std;
+#include "include/map.h"
 
 int windowRows, windowColumns;
 enum gameState {MainMenu, Settings, Leaderboard, Playing};
@@ -8,11 +7,10 @@ Map map;
 
 int main() 
 {	
-	char playerInput[16];
 	short gameState;
 
-	initializeConsole();
-	map.setDimensions(24, 30, 10);
+	initializeSystem();
+	map.setDimensions(24, 30, 50);
 	map.initialize();
 
 	bool finished = false;

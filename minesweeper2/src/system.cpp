@@ -1,7 +1,8 @@
-#include "../include/stdafx.h"
+#include "../include/system.h"
 
-void initializeConsole()
+void initializeSystem()
 {
+	srand(time(0));
 	setCursorSize(80);
 	setCursorVisible(false);
 }
@@ -99,8 +100,8 @@ void setTextColor(const int &color)
 
 void readPlayerInput(char *playerInput, const int &inputSizeLimit)
 {
-	cin.getline(playerInput, INPUT_SIZE);
-	cin.clear();
+	std::cin.getline(playerInput, INPUT_SIZE);
+	std::cin.clear();
 }
 
 void printFeedback(const int &posX, const int &posY, const char *feedbackText)

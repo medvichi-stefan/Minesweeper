@@ -1,8 +1,13 @@
 #pragma once
-#ifndef CONSOLE_H
-#define CONSOLE_H
+#ifndef SYSTEM_H
+#define SYSTEM_H
 
-void initializeConsole();
+#include "stdafx.h"
+
+#define MAX_INPUT_SIZE			16
+#define INPUT_SIZE				5
+
+void initializeSystem();
 void gotoXY(const int &x, const int &y);
 void clearConsole();
 void getWindowSize(int &rows, int &columns);

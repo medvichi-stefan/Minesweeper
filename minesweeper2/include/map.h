@@ -2,11 +2,14 @@
 #ifndef GAME_MAP_H
 #define GAME_MAP_H
 
-#include <ctime>
+#include "board_cell.h"
+#include "system.h"
 
 #define MAX_ROWS				24
 #define MAX_COLUMNS				30
 #define MAX_NO_BOMBS			668
+
+#define NO_OF_NEIGHBOURS		8
 
 #define MAX_INPUT_SIZE			16
 #define INPUT_SIZE				5
@@ -45,8 +48,9 @@ struct Map
 
 	Position getPositionFromInput(const char *playerInput);
 	void updateSquare(const Position &currentPosition, const char *playerInput);
-	void uncoverSquares(const Position &currentPosition);
+	void revealSquares(const Position &currentPosition);
 	void switchFlagState(const Position &currentPosition);
+	char countMinedNeighbours(const Position &currentPosition);
 
 	inline bool isSquareCovered(const Position &currentPosition);
 	inline bool isSquareFlagged(const Position &currentPosition);

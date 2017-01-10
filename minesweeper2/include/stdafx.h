@@ -1,11 +1,10 @@
 #pragma once
+#ifndef MAIN_H
+#define MAIN_H
 #include <iostream>
 #include <windows.h>
 #include <conio.h>
-#include <limits>
-#include "system.h"
-#include "board_cell.h"
-#include "map.h"
+#include <ctime>
 #include "colors.h"
 
-using namespace std;
+#endif

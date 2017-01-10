@@ -1,4 +1,7 @@
+#pragma once
 #include "../include/stdafx.h"
+#include "../include/map.h"
+#include "../include/board_cell.h"
 
 void Map::initialize()
 {
@@ -9,10 +12,7 @@ void Map::initialize()
 	{
 		for (j = 1; j <= columns; ++j)
 		{
-			map[i][j].value = '0';
-			map[i][j].isCovered = true;
-			map[i][j].hasBomb = false;
-			map[i][j].isFlagged = false;
+			map[i][j].initialize();
 		}
 	}
 }
@@ -53,7 +53,10 @@ void Map::print(const int &x, const int &y)
 			}
 			else
 			{
+				if (map[i][j].isMine())
+					setTextColor(COLOR_RED);
 				printf(" %c ", map[i][j].value);
+				setTextColor(COLOR_WHITE);
 			}
 		}
 	}
@@ -67,7 +70,7 @@ void Map::printInfo(const int &x, const int &y)
 	lastLetter = rows - 1 + 'a';
 	lastNumber = columns;
 	gotoXY(x, y);
-	printf("Legend: * - uncovered square, F - flagged, M - uncover more squares, 0-9 - number of neighbours with a mine");
+	printf("Legend: * - unrevealed square, F - flagged, M - reveal more squares, 0-9 - number of neighbours with a mine");
 	gotoXY(x, y + 2);
 	printf("To choose a square, enter below the coordonates by following this pattern: [F/M][a-%c][1-%d]", lastLetter, lastNumber);
 	gotoXY(x, y + 4);
@@ -217,7 +220,7 @@ void Map::updateSquare(const Position &currentPosition, const char *playerInput)
 		{
 			if (isSquareFlagged(currentPosition) == false)
 			{
-				uncoverSquares(currentPosition);
+				revealSquares(currentPosition);
 			}
 		}
 	}
@@ -225,17 +228,50 @@ void Map::updateSquare(const Position &currentPosition, const char *playerInput)
 
 void Map::generateMines(const Position &safePosition)
 {
+	short placedMines = 0;
+	Position randomPosition;
+	char noOfMinedNeighbours;
 
+	while (placedMines < noBombs)
+	{
+		randomPosition.row = rand()%rows + 1;
+		randomPosition.column = rand()%columns + 1;
+		if (map[randomPosition.row][randomPosition.column].isMine() == false 
+			&& randomPosition.row != safePosition.row && randomPosition.column != safePosition.column)
+		{
+			map[randomPosition.row][randomPosition.column].placeMine();
+			++placedMines;
+		}
+	}
 }
 
-void Map::uncoverSquares(const Position &currentPosition)
+void Map::revealSquares(const Position &currentPosition)
 {
-	map[currentPosition.row][currentPosition.column].uncover();
+	map[currentPosition.row][currentPosition.column].reveal();
 }
 
 void Map::switchFlagState(const Position &currentPosition)
 {
 	map[currentPosition.row][currentPosition.column].switchFlag();
+}
+
+char Map::countMinedNeighbours(const Position &currentPosition)
+{
+	char directionRow[]		= { -1, -1, 0, 1, 1, 1, 0, -1 };
+	char directionColumn[]	= { 0, 1, 1, 1, 0, -1, -1, -1 };
+	Position currentNeighbour;
+	char noOfMinedNeighbours = 0;
+	
+	for (int neighbour = 0; neighbour < NO_OF_NEIGHBOURS; ++neighbour)
+	{
+		currentNeighbour.row = currentPosition.row + directionRow[neighbour];
+		currentNeighbour.column = currentPosition.column + directionColumn[neighbour];
+		if (map[currentNeighbour.row][currentNeighbour.column].isMine() == true)
+		{
+			++noOfMinedNeighbours;
+		}
+	}
+	return noOfMinedNeighbours;
 }
 
 inline bool Map::isSquareCovered(const Position &currentPosition)

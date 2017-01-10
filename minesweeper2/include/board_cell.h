@@ -1,6 +1,8 @@
 #pragma once
-#ifndef FIELD_CELL_H
-#define FIELD_CELL_H
+#ifndef BOARD_CELL_H
+#define BOARD_CELL_H
+
+#include "stdafx.h"
 
 struct BoardCell
 {
@@ -10,8 +12,10 @@ struct BoardCell
 	bool isFlagged;
 
 	void initialize();
-	void uncover();
+	void reveal();
 	void switchFlag();
+	void placeMine();
+	bool isMine();
 };
 
 #endif
