@@ -9,15 +9,15 @@ void Map::initialize()
 	{
 		for (j = 1; j <= columns; ++j)
 		{
-			map[i][j] = '0';
-			hasBomb[i][j] = false;
-			isCovered[i][j] = true;
-			isFlagged[i][j] = false;
+			map[i][j].value = '0';
+			map[i][j].isCovered = true;
+			map[i][j].hasBomb = false;
+			map[i][j].isFlagged = false;
 		}
 	}
 }
 
-void Map::setSize(const unsigned short &newRows, const unsigned short &newColumns, const unsigned short &newNoBombs)
+void Map::setDimensions(const unsigned short &newRows, const unsigned short &newColumns, const unsigned short &newNoBombs)
 {
 	rows = newRows;
 	columns = newColumns;
@@ -26,62 +26,34 @@ void Map::setSize(const unsigned short &newRows, const unsigned short &newColumn
 
 void Map::print(const int &x, const int &y)
 {
-	int i, j;
-	char letterIdentifier;
-	short int numberIdentifier;
-
 	int currentRow, currentColumn;
 
-	setTextColor(COLOR_YELLOW);
+	printLetterIdentifierOnRow(x, y, COLOR_YELLOW);
 
-	currentRow = y; currentColumn = x - 2;
-	for (i = 1, letterIdentifier = 'a'; i <= rows; ++i, currentRow +=2 )
-	{
-		gotoXY(currentColumn, currentRow);
-		printf(" %c ", letterIdentifier++);
-	}
+	printIdentifierSeparatorOnRow(x, y, COLOR_WHITE);
 
-	setTextColor(COLOR_WHITE);
-	currentRow = y - 1; currentColumn = x;
-	for (i = 1; i <= rows * 2; ++i, currentRow += 1)
-	{
-		gotoXY(currentColumn, currentRow);
-		printf("|");
-	}
+	printNumberIdentifierOnColumn(x, y, COLOR_YELLOW);
 
-	setTextColor(COLOR_YELLOW);
-	currentRow = y - 3; currentColumn = x + 2;
-	for (int i = 1, numberIdentifier = 1; i <= columns; ++i, currentColumn += 3)
-	{
-		gotoXY(currentColumn, currentRow);
-		printf("%d  ", numberIdentifier++);
-	}
+	printIdentifierSeparatorOnColumn(x, y, COLOR_WHITE);
 
-	setTextColor(COLOR_WHITE);
-	currentRow = y - 2; currentColumn = x;
-	for (int i = 1; i <= columns * 3 + 1; ++i, currentColumn += 1)
-	{
-		gotoXY(currentColumn, currentRow);
-		printf("_");
-	}
-
+	int i, j;
 	currentRow = y; currentColumn = x + 1;
 	for (i = 1; i <= rows; ++i, currentRow+=2)
 	{
 		gotoXY(currentColumn, currentRow);
 		for (j = 1; j <= columns; ++j)
 		{
-			if (isFlagged[i][j] && isCovered[i][j])
+			if (map[i][j].isFlagged && map[i][j].isCovered)
 			{
 				printf(" %c ", FLAG_LETTER);
 			}
-			else if (isCovered[i][j])
+			else if (map[i][j].isCovered)
 			{
 				printf(" %c ", COVERED_SQUARE);
 			}
 			else
 			{
-				printf(" %c ", map[i][j]);
+				printf(" %c ", map[i][j].value);
 			}
 		}
 	}
@@ -110,6 +82,60 @@ void Map::printOnScreen()
 	printInfo(TEXT_INFO_POSITION_X, rows * 2 + 5);
 }
 
+void Map::printLetterIdentifierOnRow(int x, int y, const int &textColor)
+{
+	char letterIdentifier;
+	int currentRow, currentColumn, i;
+
+	setTextColor(COLOR_YELLOW);
+	currentRow = y; currentColumn = x - 2;
+	for (i = 1, letterIdentifier = 'a'; i <= rows; ++i, currentRow += 2)
+	{
+		gotoXY(currentColumn, currentRow);
+		printf(" %c ", letterIdentifier++);
+	}
+}
+
+void Map::printNumberIdentifierOnColumn(int x, int y, const int &textColor)
+{
+	short int numberIdentifier;
+	int currentRow, currentColumn, i;
+
+	setTextColor(COLOR_YELLOW);
+	currentRow = y - 3; currentColumn = x + 2;
+	for (i = 1, numberIdentifier = 1; i <= columns; ++i, currentColumn += 3)
+	{
+		gotoXY(currentColumn, currentRow);
+		printf("%d  ", numberIdentifier++);
+	}
+}
+
+void Map::printIdentifierSeparatorOnRow(int x, int y, const int &textColor)
+{
+	int currentRow, currentColumn, i;
+
+	setTextColor(COLOR_WHITE);
+	currentRow = y - 1; currentColumn = x;
+	for (i = 1; i <= rows * 2; ++i, currentRow += 1)
+	{
+		gotoXY(currentColumn, currentRow);
+		printf("|");
+	}
+}
+
+void Map::printIdentifierSeparatorOnColumn(int x, int y, const int &textColor)
+{
+	int currentRow, currentColumn, i;
+
+	setTextColor(COLOR_WHITE);
+	currentRow = y - 2; currentColumn = x;
+	for (i = 1; i <= columns * 3 + 1; ++i, currentColumn += 1)
+	{
+		gotoXY(currentColumn, currentRow);
+		printf("_");
+	}
+}
+
 void Map::processInput()
 {
 	char playerInput[MAX_INPUT_SIZE];
@@ -126,7 +152,7 @@ Position Map::getPositionFromInput(const char *playerInput)
 {
 	char firstChar, maxLetter, currentRow;
 	unsigned short maxNumber = columns;
-	unsigned short currentNumber, currentColumn;
+	unsigned short currentColumn;
 	Position currentPosition = { 0, 0 };
 
 	maxLetter = getCharFromNumber(rows);
@@ -204,20 +230,20 @@ void Map::generateMines(const Position &safePosition)
 
 void Map::uncoverSquares(const Position &currentPosition)
 {
-	isCovered[currentPosition.row][currentPosition.column] = false;
+	map[currentPosition.row][currentPosition.column].uncover();
 }
 
 void Map::switchFlagState(const Position &currentPosition)
 {
-	isFlagged[currentPosition.row][currentPosition.column] = 1 ^ isFlagged[currentPosition.row][currentPosition.column];
+	map[currentPosition.row][currentPosition.column].switchFlag();
 }
 
 inline bool Map::isSquareCovered(const Position &currentPosition)
 {
-	return isCovered[currentPosition.row][currentPosition.column];
+	return map[currentPosition.row][currentPosition.column].isCovered;
 }
 
 inline bool Map::isSquareFlagged(const Position &currentPosition)
 {
-	return isFlagged[currentPosition.row][currentPosition.column];
+	return map[currentPosition.row][currentPosition.column].isFlagged;
 }

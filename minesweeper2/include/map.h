@@ -2,6 +2,8 @@
 #ifndef GAME_MAP_H
 #define GAME_MAP_H
 
+#include <ctime>
+
 #define MAX_ROWS				24
 #define MAX_COLUMNS				30
 #define MAX_NO_BOMBS			668
@@ -23,21 +25,21 @@ struct Position
 
 struct Map
 {
-	unsigned short int rows, columns;
-	char map[MAX_ROWS + 1][MAX_COLUMNS + 1];
-	bool hasBomb[MAX_ROWS + 1][MAX_COLUMNS + 1];
-	bool isCovered[MAX_ROWS + 1][MAX_COLUMNS + 1];
-	bool isFlagged[MAX_ROWS + 1][MAX_COLUMNS + 1];
-	unsigned short int noBombs;
+	unsigned short int rows, columns, noBombs;
+	struct BoardCell map[MAX_ROWS + 1][MAX_COLUMNS + 1];
 	bool firstUncover;
 
 	void initialize();
-	void setSize(const unsigned short &newRows, const unsigned short &newColumns, const unsigned short &newNoBombs);
+	void setDimensions(const unsigned short &newRows, const unsigned short &newColumns, const unsigned short &newNoBombs);
 	void generateMines(const Position &safePosition);
 
 	void printOnScreen();
 	void print(const int &x, const int &y);
 	void printInfo(const int &x, const int &y);
+	void printLetterIdentifierOnRow(int x, int y, const int &textColor);
+	void printNumberIdentifierOnColumn(int x, int y, const int &textColor);
+	void printIdentifierSeparatorOnRow(int x, int y, const int &textColor);
+	void printIdentifierSeparatorOnColumn(int x, int y, const int &textColor);
 
 	void processInput();
 

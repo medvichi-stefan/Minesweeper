@@ -12,7 +12,7 @@ int main()
 	short gameState;
 
 	initializeConsole();
-	map.setSize(24, 30, 10);
+	map.setDimensions(24, 30, 10);
 	map.initialize();
 
 	bool finished = false;
