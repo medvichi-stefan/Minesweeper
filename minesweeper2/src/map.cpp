@@ -4,24 +4,24 @@ void Map::initialize()
 {
 	int i, j;
 	
-	this->firstUncover = true;
-	for (i = 1; i <= this->rows; ++i)
+	firstUncover = true;
+	for (i = 1; i <= rows; ++i)
 	{
-		for (j = 1; j <= this->columns; ++j)
+		for (j = 1; j <= columns; ++j)
 		{
-			this->map[i][j] = '0';
-			this->hasBomb[i][j] = false;
-			this->isCovered[i][j] = true;
-			this->isFlagged[i][j] = false;
+			map[i][j] = '0';
+			hasBomb[i][j] = false;
+			isCovered[i][j] = true;
+			isFlagged[i][j] = false;
 		}
 	}
 }
 
-void Map::setSize(const unsigned short &rows, const unsigned short &columns, const unsigned short &noBombs)
+void Map::setSize(const unsigned short &newRows, const unsigned short &newColumns, const unsigned short &newNoBombs)
 {
-	this->rows = rows;
-	this->columns = columns;
-	this->noBombs = noBombs;
+	rows = newRows;
+	columns = newColumns;
+	noBombs = newNoBombs;
 }
 
 void Map::print(const int &x, const int &y)
@@ -35,7 +35,7 @@ void Map::print(const int &x, const int &y)
 	setTextColor(COLOR_YELLOW);
 
 	currentRow = y; currentColumn = x - 2;
-	for (i = 1, letterIdentifier = 'a'; i <= this->rows; ++i, currentRow +=2 )
+	for (i = 1, letterIdentifier = 'a'; i <= rows; ++i, currentRow +=2 )
 	{
 		gotoXY(currentColumn, currentRow);
 		printf(" %c ", letterIdentifier++);
@@ -43,7 +43,7 @@ void Map::print(const int &x, const int &y)
 
 	setTextColor(COLOR_WHITE);
 	currentRow = y - 1; currentColumn = x;
-	for (i = 1; i <= this->rows * 2; ++i, currentRow += 1)
+	for (i = 1; i <= rows * 2; ++i, currentRow += 1)
 	{
 		gotoXY(currentColumn, currentRow);
 		printf("|");
@@ -51,7 +51,7 @@ void Map::print(const int &x, const int &y)
 
 	setTextColor(COLOR_YELLOW);
 	currentRow = y - 3; currentColumn = x + 2;
-	for (int i = 1, numberIdentifier = 1; i <= this->columns; ++i, currentColumn += 3)
+	for (int i = 1, numberIdentifier = 1; i <= columns; ++i, currentColumn += 3)
 	{
 		gotoXY(currentColumn, currentRow);
 		printf("%d  ", numberIdentifier++);
@@ -59,29 +59,29 @@ void Map::print(const int &x, const int &y)
 
 	setTextColor(COLOR_WHITE);
 	currentRow = y - 2; currentColumn = x;
-	for (int i = 1; i <= this->columns * 3 + 1; ++i, currentColumn += 1)
+	for (int i = 1; i <= columns * 3 + 1; ++i, currentColumn += 1)
 	{
 		gotoXY(currentColumn, currentRow);
 		printf("_");
 	}
 
 	currentRow = y; currentColumn = x + 1;
-	for (i = 1; i <= this->rows; ++i, currentRow+=2)
+	for (i = 1; i <= rows; ++i, currentRow+=2)
 	{
 		gotoXY(currentColumn, currentRow);
-		for (j = 1; j <= this->columns; ++j)
+		for (j = 1; j <= columns; ++j)
 		{
-			if (this->isFlagged[i][j] && this->isCovered[i][j])
+			if (isFlagged[i][j] && isCovered[i][j])
 			{
-				printf(" M ");
+				printf(" %c ", FLAG_LETTER);
 			}
-			else if (this->isCovered[i][j])
+			else if (isCovered[i][j])
 			{
-				printf(" * ");
+				printf(" %c ", COVERED_SQUARE);
 			}
 			else
 			{
-				printf(" %c ", this->map[i][j]);
+				printf(" %c ", map[i][j]);
 			}
 		}
 	}
@@ -92,8 +92,8 @@ void Map::printInfo(const int &x, const int &y)
 	char lastLetter;
 	short lastNumber;
 
-	lastLetter = this->rows - 1 + 'a';
-	lastNumber = this->columns;
+	lastLetter = rows - 1 + 'a';
+	lastNumber = columns;
 	gotoXY(x, y);
 	printf("Legend: * - uncovered square, F - flagged, M - uncover more squares, 0-9 - number of neighbours with a mine");
 	gotoXY(x, y + 2);
@@ -106,8 +106,8 @@ void Map::printInfo(const int &x, const int &y)
 void Map::printOnScreen()
 {
 	clearConsole();
-	print(MAP_X + MAX_ROWS - this->rows, 5);
-	printInfo(TEXT_INFO_X, this->rows * 2 + 5);
+	print(MAP_POSITION_X + MAX_ROWS - rows, 5);
+	printInfo(TEXT_INFO_POSITION_X, rows * 2 + 5);
 }
 
 void Map::processInput()
@@ -117,96 +117,107 @@ void Map::processInput()
 	readPlayerInput(playerInput, INPUT_SIZE);
 
 	Position positionRequested;
-	positionRequested = this->getPositionFromInput(playerInput);
+	positionRequested = getPositionFromInput(playerInput);
 	
-	this->updateSquare(positionRequested, playerInput);
+	updateSquare(positionRequested, playerInput);
 }
 
 Position Map::getPositionFromInput(const char *playerInput)
 {
+	char firstChar, maxLetter, currentRow;
+	unsigned short maxNumber = columns;
+	unsigned short currentNumber, currentColumn;
+	Position currentPosition = { 0, 0 };
 
-	char firstLetter = playerInput[0];
-	char row;
-	unsigned short column;
-	Position currentPosition;
+	maxLetter = getCharFromNumber(rows);
+	firstChar = playerInput[0];
 
-	if (firstLetter == 'F' || firstLetter == 'M')
+	if (isMarkingLetter(firstChar))
 	{
-		row = tolower(playerInput[1]);
-		column = getNumberFromString(playerInput + 2);
-		currentPosition.row = row - 'a' + 1;
-		currentPosition.column = column;
+		currentRow = tolower(playerInput[1]);
+		currentColumn = getNumberFromString(playerInput + 2);
+		if (isLetterInRange(currentRow, maxLetter))
+		{
+			currentPosition.row = getNumberFromChar(currentRow);
+			if (isNumberInRange(currentColumn, maxNumber))
+			{
+				currentPosition.column = currentColumn;
+			}
+		}
 	}
 	else
 	{
-		row = tolower(playerInput[0]);
-		column = getNumberFromString(playerInput + 1);
-		currentPosition.row = row - 'a' + 1;
-		currentPosition.column = column;
+		firstChar = tolower(firstChar);
+		currentRow = firstChar;
+		currentColumn = getNumberFromString(playerInput + 1);
+		if (isLetterInRange(firstChar, maxLetter))
+		{
+			currentPosition.row = getNumberFromChar(firstChar);
+			if (isNumberInRange(currentColumn, maxNumber))
+			{
+				currentPosition.column = currentColumn;
+			}
+		}
 	}
 	return currentPosition;
 }
 
 void Map::updateSquare(const Position &currentPosition, const char *playerInput)
 {
-	char maxLetter = this->rows - 1 + 'a';
-	unsigned short maxNumber = this->columns;
-	unsigned short currentNumber;
+	char firstInputChar = playerInput[0];
 
-	if (playerInput[0] == 'F')
+	if (firstInputChar == FLAG_LETTER)
 	{
-		if (isLetterInRange(playerInput[1], maxLetter))
+		if (isSquareCovered(currentPosition) == true)
 		{
-			currentNumber = getNumberFromString(playerInput + 2);
-			if (isNumberInRange(currentNumber, maxNumber))
-			{
-				this->isFlagged[currentPosition.row][currentPosition.column] = 1 ^ isFlagged[currentPosition.row][currentPosition.column];
-			}
+			switchFlagState(currentPosition);
 		}
 	}
-	else if (playerInput[0] == 'M')
+	else if (firstInputChar == BIG_UNCOVER_LETTER)
 	{
+		if (isSquareCovered(currentPosition) == true)
+		{
 
+		}
 	}
 	else
 	{
-		if (isLetterInRange(playerInput[0], maxLetter))
+		if (firstUncover)
 		{
-			currentNumber = getNumberFromString(playerInput + 1);
-			if (isNumberInRange(currentNumber, maxNumber))
+			firstUncover = false;
+			generateMines(currentPosition);
+		}
+		if (isSquareCovered(currentPosition) == true)
+		{
+			if (isSquareFlagged(currentPosition) == false)
 			{
-				if (this->firstUncover)
-				{
-					this->firstUncover = false;
-					this->generateMines();
-				}
-				if (this->isCovered[currentPosition.row][currentPosition.column] == true)
-				{
-					this->uncoverAllSquares(currentPosition);
-				}
+				uncoverSquares(currentPosition);
 			}
 		}
 	}
 }
 
-void Map::generateMines()
+void Map::generateMines(const Position &safePosition)
 {
 
 }
 
-void Map::uncoverAllSquares(const Position &currentPos)
+void Map::uncoverSquares(const Position &currentPosition)
 {
-
+	isCovered[currentPosition.row][currentPosition.column] = false;
 }
 
-inline bool isLetterInRange(const char &currentLetter, const char &maxLetter)
+void Map::switchFlagState(const Position &currentPosition)
 {
-	if (currentLetter >= 'a' && currentLetter <= maxLetter) return true;
-	else return false;
+	isFlagged[currentPosition.row][currentPosition.column] = 1 ^ isFlagged[currentPosition.row][currentPosition.column];
 }
 
-inline bool isNumberInRange(const unsigned short &currentNumber, const unsigned short &maxNumber)
+inline bool Map::isSquareCovered(const Position &currentPosition)
 {
-	if (currentNumber >= 1 && currentNumber <= maxNumber) return true;
-	else return false;
+	return isCovered[currentPosition.row][currentPosition.column];
+}
+
+inline bool Map::isSquareFlagged(const Position &currentPosition)
+{
+	return isFlagged[currentPosition.row][currentPosition.column];
 }

@@ -3,7 +3,7 @@
 using namespace std;
 
 int windowRows, windowColumns;
-
+enum gameState {MainMenu, Settings, Leaderboard, Playing};
 Map map;
 
 int main() 
@@ -17,17 +17,24 @@ int main()
 
 	bool finished = false;
 
-	gameState = 0;
+	gameState = Playing;
 	while (!finished)
 	{
-		if (gameState == 0)
+		switch (gameState)
 		{
+		case MainMenu:
+			printMainMenu();
+			break;
+		case Settings:
+			printSettingsMenu();
+			break;
+		case Leaderboard:
+			printLeaderboard();
+			break;
+		case Playing:
 			map.printOnScreen();
 			map.processInput();
-		}
-		else
-		{
-			printOnScreen(gameState);
+			break;
 		}
 	}
 

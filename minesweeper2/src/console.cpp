@@ -6,7 +6,7 @@ void initializeConsole()
 	setCursorVisible(false);
 }
 
-void gotoXY(int x, int y)
+void gotoXY(const int &x, const int &y)
 {
 	COORD coord = { x, y };
 
@@ -27,23 +27,6 @@ void clearConsole()
 		FillConsoleOutputCharacter(hStdOut, (CHAR)32, csbi.dwSize.X * csbi.dwSize.Y, coord, &count);
 		FillConsoleOutputAttribute(hStdOut, csbi.wAttributes, csbi.dwSize.X * csbi.dwSize.Y, coord, &count);
 		SetConsoleCursorPosition(hStdOut, coord);
-	}
-	return;
-}
-
-void printOnScreen(const short &gameState)
-{
-	switch (gameState)
-	{
-	case 1:
-		writeMainMenu();
-		break;
-	case 2:
-		writeSettingsMenu();
-		break;
-	case 3:
-		writeLeaderboard();
-		break;
 	}
 }
 
@@ -118,7 +101,26 @@ void readPlayerInput(char *playerInput, const int &inputSizeLimit)
 {
 	cin.getline(playerInput, INPUT_SIZE);
 	cin.clear();
-	//cin.ignore((numeric_limits<streamsize>::max)(), '\n');
+}
+
+void printFeedback(const int &posX, const int &posY, const char *feedbackText)
+{
+
+}
+
+void printMainMenu()
+{
+
+}
+
+void printSettingsMenu()
+{
+
+}
+
+void printLeaderboard()
+{
+
 }
 
 unsigned short getNumberFromString(const char *string)
@@ -130,19 +132,4 @@ unsigned short getNumberFromString(const char *string)
 		number = number * 10 + string[i] - '0';
 	}
 	return number;
-}
-
-void writeMainMenu()
-{
-
-}
-
-void writeSettingsMenu()
-{
-
-}
-
-void writeLeaderboard()
-{
-
 }
