@@ -29,6 +29,7 @@ struct Map
 	bool firstUncover, won, lost;
 	char difficulty;
 	unsigned short int rows, columns, noBombs, noRevealedSquares;
+	clock_t startTime, endTime;
 	struct BoardCell map[MAX_ROWS + 1][MAX_COLUMNS + 1]; // 1 -> MAX_ROW
 
 	void initialize(const short &currentRows, const short &currentColumns, const short &currentBombs);
@@ -42,6 +43,7 @@ struct Map
 	void printOnScreen();
 	void print(const int &x, const int &y);
 	void printInfo(const int &x, const int &y);
+	void printTimeElapsed();
 	void printLetterIdentifierOnRow(int x, int y, const int &textColor);
 	void printNumberIdentifierOnColumn(int x, int y, const int &textColor);
 	void printIdentifierSeparatorOnRow(int x, int y, const int &textColor);

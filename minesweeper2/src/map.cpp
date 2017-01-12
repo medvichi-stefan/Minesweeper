@@ -34,6 +34,7 @@ void Map::endGame(const bool &end)
 {
 	if (end == 0)
 	{
+		endTime = clock();
 		won = true;
 	}
 	else
@@ -112,6 +113,12 @@ void Map::printInfo(const int &x, const int &y)
 	gotoXY(x, y + 5);
 	printf("Command:");
 	
+}
+
+void Map::printTimeElapsed()
+{
+	endTime = clock();
+	printf(" Your time: %.2f", (double) ( difftime(endTime, startTime) / (double)CLOCKS_PER_SEC));
 }
 
 void Map::printOnScreen()
@@ -240,6 +247,10 @@ void Map::printGameEndMessage(const bool &end)
 	}
 	printf("%s", text[message]);
 	setTextColor(COLOR_WHITE);
+	if (end == 0)
+	{
+		printTimeElapsed();
+	}
 }
 
 void Map::processInput(char &gameState)
@@ -333,6 +344,7 @@ void Map::updateSquare(const Position &currentPosition, const char *playerInput)
 			{
 				firstUncover = false;
 				generateMines(currentPosition);
+				startTime = clock();
 			}
 			if (isSquareCovered(currentPosition) == true)
 			{
