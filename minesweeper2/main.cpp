@@ -2,34 +2,44 @@
 #include "include/map.h"
 
 int windowRows, windowColumns;
-enum gameState {MainMenu, Settings, Leaderboard, Playing};
 Map map;
 
 int main() 
 {	
-	short gameState;
+	char gameState;
+	short mapRows, mapColumns, mapBombs;
 
 	initializeSystem();
-	map.setDimensions(24, 30, 50);
-	map.initialize();
 
 	bool finished = false;
 
-	gameState = Playing;
+	gameState = 0;
 	while (!finished)
 	{
+		if (map.lost)
+		{
+			map.lost = 1 ^ map.lost;
+			gameState = 0;
+		}
 		switch (gameState)
 		{
-		case MainMenu:
+		case 0:
 			printMainMenu();
+			processMainMenuInput(gameState);
 			break;
-		case Settings:
+		case 1:
 			printSettingsMenu();
+			processSettingsInput(gameState, mapRows, mapColumns, mapBombs);
+			if (gameState == 3)
+			{
+				map.initialize(mapRows, mapColumns, mapBombs);
+			}
 			break;
-		case Leaderboard:
+		case 2:
 			printLeaderboard();
+			processLeaderboardInput();
 			break;
-		case Playing:
+		case 3:
 			map.printOnScreen();
 			map.processInput();
 			break;

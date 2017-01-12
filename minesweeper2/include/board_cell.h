@@ -7,15 +7,21 @@
 struct BoardCell
 {
 	char value; // number of mined neighbours
-	bool isCovered;
+	bool covered;
 	bool hasBomb;
-	bool isFlagged;
+	bool flagged;
 
 	void initialize();
 	void reveal();
 	void switchFlag();
 	void placeMine();
+	void incrementValue();
+
+	char getValue();
+
 	bool isMine();
+	bool isFlagged();
+	bool isCovered();
 };
 
 #endif

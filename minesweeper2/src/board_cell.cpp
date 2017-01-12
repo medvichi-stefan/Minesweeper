@@ -4,19 +4,24 @@
 void BoardCell::initialize()
 {
 	value = '0';
-	isCovered = true;
-	isFlagged = false;
+	covered = true;
+	flagged = false;
 	hasBomb = false;
 }
 
 void BoardCell::reveal()
 {
-	isCovered = false;
+	covered = false;
+}
+
+char BoardCell::getValue()
+{
+	return value;
 }
 
 void BoardCell::switchFlag()
 {
-	isFlagged = 1 ^ isFlagged;
+	flagged = 1 ^ flagged;
 }
 
 void BoardCell::placeMine()
@@ -25,7 +30,22 @@ void BoardCell::placeMine()
 	hasBomb = true;
 }
 
+void BoardCell::incrementValue()
+{
+	value++;
+}
+
 bool BoardCell::isMine()
 {
 	return hasBomb;
+}
+
+bool BoardCell::isFlagged()
+{
+	return flagged;
+}
+
+bool BoardCell::isCovered()
+{
+	return covered;
 }

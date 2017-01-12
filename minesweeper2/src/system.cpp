@@ -7,6 +7,11 @@ void initializeSystem()
 	setCursorVisible(false);
 }
 
+void quit()
+{
+	exit(EXIT_SUCCESS);
+}
+
 void gotoXY(const int &x, const int &y)
 {
 	COORD coord = { x, y };
@@ -104,6 +109,118 @@ void readPlayerInput(char *playerInput, const int &inputSizeLimit)
 	std::cin.clear();
 }
 
+void processMainMenuInput(char &gameState)
+{
+	char playerInput[MAX_INPUT_SIZE];
+	readPlayerInput(playerInput, INPUT_SIZE_MAIN);
+	if (playerInput[0] == '1')
+	{
+		gameState = 1;
+	}
+	else if (playerInput[0] == '2')
+	{
+		gameState = 2;
+	}
+	else if (playerInput[0] == '3')
+	{
+		quit();
+	}
+}
+
+void processSettingsInput(char &gameState, short &rows, short &columns, short &bombs)
+{
+	char playerInput[MAX_INPUT_SIZE];
+
+	readPlayerInput(playerInput, INPUT_SIZE_SETTINGS);
+	if (playerInput[0] < '1' || playerInput[0] > '6')
+	{
+		return;
+	}
+	gameState = 3;
+	if (playerInput[0] == '1')
+	{
+		rows = EASY_NO_ROWS;
+		columns = EASY_NO_COLUMNS;
+		bombs = EASY_NO_BOMBS;
+	}
+	else if (playerInput[0] == '2')
+	{
+		rows = MEDIUM_NO_ROWS;
+		columns = MEDIUM_NO_COLUMNS;
+		bombs = MEDIUM_NO_BOMBS;
+	}
+	else if (playerInput[0] == '3')
+	{
+		rows = HARD_NO_ROWS;
+		columns = HARD_NO_COLUMNS;
+		bombs = HARD_NO_BOMBS;
+	}
+	else if (playerInput[0] == '4')
+	{
+		processCustomDimension(rows, columns, bombs);
+	}
+	else if (playerInput[0] == '5')
+	{
+		gameState = 0;
+	}
+}
+
+void processCustomDimension(short &rows, short &columns, short &bombs)
+{
+	char playerInput[MAX_INPUT_SIZE];
+	int x, y;
+	x = MENU_POSITION_X; y = MENU_POSITION_Y;
+
+	clearConsole();
+	gotoXY(x, y);
+	printf("Choose dimensions:");
+	y += 1;
+	do
+	{
+		gotoXY(x, y);
+		printf("Number of rows (%d->%d): ", MIN_ROWS, MAX_ROWS);
+		readPlayerInput(playerInput, INPUT_SIZE_DIMENSION);
+		playerInput[2] = '\0';
+		rows = getNumberFromString(playerInput);
+		if (rows < MIN_ROWS || rows > MAX_ROWS)
+		{
+			// send feedback
+		}
+	} while (rows < MIN_ROWS || rows > MAX_ROWS);
+	
+	y += 1;
+	do
+	{
+		gotoXY(x, y);
+		printf("Number of columns (%d->%d):", MIN_COLUMNS, MAX_COLUMNS);
+		readPlayerInput(playerInput, INPUT_SIZE_DIMENSION);
+		playerInput[2] = '\0';
+		columns = getNumberFromString(playerInput);
+		if (columns < MIN_COLUMNS && columns > MAX_COLUMNS)
+		{
+			//send feedback
+		}
+	} while (columns < MIN_COLUMNS || columns > MAX_COLUMNS);
+
+	y += 1;
+	do
+	{
+		gotoXY(x, y);
+		printf("Number of bombs (%d -> %d):", MIN_NO_BOMBS, MAX_NO_BOMBS);
+		readPlayerInput(playerInput, INPUT_SIZE_DIMENSION);
+		bombs = getNumberFromString(playerInput);
+		if (columns < MIN_NO_BOMBS || columns > MAX_NO_BOMBS)
+		{
+			//send feedback
+		}
+	} while (columns < MIN_NO_BOMBS || columns > MAX_NO_BOMBS);
+}
+
+void processLeaderboardInput()
+{
+	exit(0);
+}
+
 void printFeedback(const int &posX, const int &posY, const char *feedbackText)
 {
 
@@ -111,17 +228,49 @@ void printFeedback(const int &posX, const int &posY, const char *feedbackText)
 
 void printMainMenu()
 {
+	clearConsole();
+	int x, y;
+	x = MENU_POSITION_X; y = MENU_POSITION_Y;
+	gotoXY(x, y);
+	printf("Main Menu");
+	
+	char text[][20] = { "1. Play", "2. Leaderboard", "3. Quit"};
+	int i;
 
+	for (i = 0, y += 2; i < 3; ++i, y += 2)
+	{
+		gotoXY(x, y);
+		printf("%s", text[i]);
+	}
+	gotoXY(x, y);
+	printf("Choose [1-3]:");
 }
 
 void printSettingsMenu()
 {
-
+	clearConsole();
+	int x, y;
+	x = MENU_POSITION_X; y = MENU_POSITION_Y;
+	gotoXY(x, y);
+	printf("Play - Settings");
+	y += 2;
+	gotoXY(x, y);
+	printf("Choose the difficulty:");
+	char text[][50] = {"1. Easy - 9x9 tile grid, 10 mines", "2. Medium - 16x16 tile grid, 40 mines", "3. Hard - 16x30 tile grid, 99 mines",
+						"4. Custom - Choose your own dimensions", "5. Back to main menu"};
+	int i;
+	for (y += 2, i = 0; i < 5; ++i, y += 2)
+	{
+		gotoXY(x, y);
+		printf("%s", text[i]);
+	}
+	gotoXY(x, y);
+	printf("Choose [1-5]:");
 }
 
 void printLeaderboard()
 {
-
+	exit(0);
 }
 
 unsigned short getNumberFromString(const char *string)

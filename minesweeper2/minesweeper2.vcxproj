@@ -80,12 +80,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\stack.cpp" />
     <ClCompile Include="src\system.cpp" />
     <ClCompile Include="src\board_cell.cpp" />
     <ClCompile Include="src\map.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\colors.h" />
+    <ClInclude Include="include\feedback.h" />
+    <ClInclude Include="include\position_struct.h" />
+    <ClInclude Include="include\stack.h" />
     <ClInclude Include="include\system.h" />
     <ClInclude Include="include\board_cell.h" />
     <ClInclude Include="include\map.h" />
