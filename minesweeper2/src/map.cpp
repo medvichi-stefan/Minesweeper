@@ -10,7 +10,10 @@ void Map::initialize(const short &currentRows, const short &currentColumns, cons
 	setDimensions(currentRows, currentColumns, currentBombs);
 
 	firstUncover = true;
+	won = false;
 	lost = false;
+	noRevealedSquares = 0;
+
 	for (i = 1; i <= rows; ++i)
 	{
 		for (j = 1; j <= columns; ++j)
@@ -27,14 +30,35 @@ void Map::setDimensions(const unsigned short &newRows, const unsigned short &new
 	noBombs = newNoBombs;
 }
 
-void Map::gameLost()
+void Map::endGame(const bool &end)
 {
-	lost = true;
-	revealAllSquares();
-	clearConsole();
-	print(MAP_POSITION_X, MAP_POSITION_Y);
-	printGameLost();
+	if (end == 0)
+	{
+		won = true;
+	}
+	else
+	{
+		lost = true;
+	}
+	printGameEndMessage(end);
+	revealMap();
 	Sleep(5000);
+}
+
+void Map::revealMap()
+{
+	revealAllSquares();
+	print(MAP_POSITION_X, MAP_POSITION_Y);
+}
+
+bool Map::checkWinCondition()
+{
+	if (rows * columns - noRevealedSquares == noBombs)
+	{
+		endGame(WON);
+		return true;
+	}
+	else return false;
 }
 
 void Map::print(const int &x, const int &y)
@@ -80,11 +104,13 @@ void Map::printInfo(const int &x, const int &y)
 	lastLetter = rows - 1 + 'a';
 	lastNumber = columns;
 	gotoXY(x, y);
-	printf("Legend: * - unrevealed square, F - flagged, M - reveal more squares, 0-9 - number of neighbours with a mine");
+	printf("Legend: * - unrevealed square, F - flagged square, M - reveal more squares, 0-9 - number of neighbours with a mine");
 	gotoXY(x, y + 2);
 	printf("To choose a square, enter below the coordonates by following this pattern: [F/M][a-%c][1-%d]", lastLetter, lastNumber);
-	gotoXY(x, y + 4);
-	printf("Choose the square:");
+	gotoXY(x, y + 3);
+	printf("To quit, enter [Q], to go back to menu, enter [B].");
+	gotoXY(x, y + 5);
+	printf("Command:");
 	
 }
 
@@ -92,7 +118,7 @@ void Map::printOnScreen()
 {
 	clearConsole();
 	print(MAP_POSITION_X, MAP_POSITION_Y);
-	printInfo(TEXT_INFO_POSITION_X, rows * 2 + 5);
+	printInfo(TEXT_INFO_POSITION_X, rows * 2 + MAP_POSITION_Y);
 }
 
 void Map::printLetterIdentifierOnRow(int x, int y, const int &textColor)
@@ -194,20 +220,43 @@ void Map::printCharacter(const char &character)
 	setTextColor(COLOR_WHITE);
 }
 
-void Map::printGameLost()
+void Map::printGameEndMessage(const bool &end)
 {
+	clearConsole();
 	int x, y;
-	x = MAP_POSITION_X; y = MAP_POSITION_Y;
-	y += columns * 2;
+	char text[][32] = { "CONGRATULATIONS, YOU WON!!", "You LOST!" };
+	x = MAP_POSITION_X; y = MAP_POSITION_Y - 5;
 	gotoXY(x, y);
-	printf("You LOST!");
+	bool message;
+	if (end == 0)
+	{
+		setTextColor(COLOR_GREEN);
+		message = 0;
+	}
+	else if (end == 1)
+	{
+		message = 1;
+		setTextColor(COLOR_RED);
+	}
+	printf("%s", text[message]);
+	setTextColor(COLOR_WHITE);
 }
 
-void Map::processInput()
+void Map::processInput(char &gameState)
 {
 	char playerInput[MAX_INPUT_SIZE];
 
 	readPlayerInput(playerInput, INPUT_SIZE);
+	
+	char firstInputChar = playerInput[0];
+	if (firstInputChar == QUIT_LETTER)
+	{
+		quit();
+	}
+	else if (firstInputChar == BACK_TO_MENU_LETTER)
+	{
+		gameState = 0;
+	}
 
 	Position positionRequested;
 	positionRequested = getPositionFromInput(playerInput);
@@ -268,22 +317,26 @@ void Map::updateSquare(const Position &currentPosition, const char *playerInput)
 	}
 	else if (firstInputChar == BIG_UNCOVER_LETTER)
 	{
-		if (isSquareCovered(currentPosition) == true)
+		if (isSquareCovered(currentPosition) == false)
 		{
-
+			if (countFlaggedNeighbours(currentPosition) == getSquareValue(currentPosition))
+			{
+				revealSurroundedSquares(currentPosition);
+			}
 		}
 	}
 	else
 	{
-		if (firstUncover)
+		if (isSquareFlagged(currentPosition) == false)
 		{
-			firstUncover = false;
-			generateMines(currentPosition);
-		}
-		if (isSquareCovered(currentPosition) == true)
-		{
-			if (isSquareFlagged(currentPosition) == false)
+			if (firstUncover)
 			{
+				firstUncover = false;
+				generateMines(currentPosition);
+			}
+			if (isSquareCovered(currentPosition) == true)
+			{
+
 				revealSquares(currentPosition);
 			}
 		}
@@ -299,10 +352,10 @@ void Map::generateMines(const Position &safePosition)
 	{
 		randomPosition.row = rand()%rows + 1;
 		randomPosition.column = rand()%columns + 1;
-		if (map[randomPosition.row][randomPosition.column].isMine() == false 
+		if (isSquareMine(randomPosition) == false
 			&& randomPosition.row != safePosition.row && randomPosition.column != safePosition.column)
 		{
-			map[randomPosition.row][randomPosition.column].placeMine();
+			placeMine(randomPosition);
 			++placedMines;
 			incrementNeighbours(randomPosition);
 		}
@@ -311,27 +364,29 @@ void Map::generateMines(const Position &safePosition)
 
 void Map::revealSquares(const Position &startPosition)
 {
-	if (map[startPosition.row][startPosition.column].isMine())
+	if (isSquareMine(startPosition) == true)
 	{
-		gameLost();
+		endGame(1);
 		return;
 	}
-	if (map[startPosition.row][startPosition.column].isCovered() == false)
+	if (isSquareCovered(startPosition) == false)
 	{
 		return;
 	}
 
 	Stack stack(startPosition);
 	Position currentPosition, currentNeighbour;
-	char directionRow[]		= { -1, -1, 0, 1, 1, 1, 0, -1 };
-	char directionColumn[]	= { 0, 1, 1, 1, 0, -1, -1, -1 };
+	char directionRow[] = { -1, -1, 0, 1, 1, 1, 0, -1 };
+	char directionColumn[] = { 0, 1, 1, 1, 0, -1, -1, -1 };
+	bool visited[MAX_ROWS + 1][MAX_COLUMNS + 1] = { false };
 
+	visited[startPosition.row][startPosition.column] = true;
 	while (stack.isEmpty() == false)
 	{
 		currentPosition = stack.top(); stack.pop();
-		map[currentPosition.row][currentPosition.column].reveal();
-		
-		if (map[currentPosition.row][currentPosition.column].getValue() == '0')
+		revealCurrentSquare(currentPosition);
+
+		if (getSquareValue(currentPosition) == '0')
 		{
 			for (int neighbour = 0; neighbour < NO_OF_NEIGHBOURS; ++neighbour)
 			{
@@ -339,15 +394,44 @@ void Map::revealSquares(const Position &startPosition)
 				currentNeighbour.column = currentPosition.column + directionColumn[neighbour];
 
 				if (checkBorders(currentNeighbour) == true
-					&& map[currentNeighbour.row][currentNeighbour.column].isCovered() == true
-					&& map[currentNeighbour.row][currentNeighbour.column].isMine() == false
-					)
+					&& isSquareCovered(currentNeighbour) == true
+					&& isSquareFlagged(currentNeighbour) == false
+					&& visited[currentNeighbour.row][currentNeighbour.column] == false)
 				{
+					visited[currentNeighbour.row][currentNeighbour.column] = true;
 					stack.push(currentNeighbour);
 				}
 			}
 		}
 	}
+}
+
+void Map::revealSurroundedSquares(const Position &currentPosition)
+{
+	Position currentNeighbour;
+	char directionRow[] = { -1, -1, 0, 1, 1, 1, 0, -1 };
+	char directionColumn[] = { 0, 1, 1, 1, 0, -1, -1, -1 };
+
+	for (int neighbour = 0; neighbour < NO_OF_NEIGHBOURS; ++neighbour)
+	{
+		currentNeighbour.row = currentPosition.row + directionRow[neighbour];
+		currentNeighbour.column = currentPosition.column + directionColumn[neighbour];
+
+		if (isSquareFlagged(currentNeighbour) == false)
+		{
+			revealCurrentSquare(currentNeighbour);
+			if (isSquareMine(currentNeighbour) == true)
+			{
+				endGame(1);
+			}
+		}
+	}
+}
+
+void Map::revealCurrentSquare(const Position &currentPosition)
+{
+	map[currentPosition.row][currentPosition.column].reveal();
+	++noRevealedSquares;
 }
 
 void Map::revealAllSquares()
@@ -357,7 +441,7 @@ void Map::revealAllSquares()
 	{
 		for (j = 1; j <= columns; ++j)
 		{
-			map[i][j].reveal();
+			revealCurrentSquare({i, j});
 		}
 	}
 }
@@ -372,13 +456,14 @@ char Map::countFlaggedNeighbours(const Position &currentPosition)
 	char directionRow[]		= { -1, -1, 0, 1, 1, 1, 0, -1 };
 	char directionColumn[]	= { 0, 1, 1, 1, 0, -1, -1, -1 };
 	Position currentNeighbour;
-	char noOfFlaggedNeighbours = 0;
+	char noOfFlaggedNeighbours = '0';
 	
 	for (int neighbour = 0; neighbour < NO_OF_NEIGHBOURS; ++neighbour)
 	{
 		currentNeighbour.row = currentPosition.row + directionRow[neighbour];
 		currentNeighbour.column = currentPosition.column + directionColumn[neighbour];
-		if (checkBorders(currentNeighbour) == true && map[currentNeighbour.row][currentNeighbour.column].isFlagged())
+
+		if (checkBorders(currentNeighbour) == true && isSquareFlagged(currentNeighbour) == true)
 		{
 			++noOfFlaggedNeighbours;
 		}
@@ -396,11 +481,22 @@ void Map::incrementNeighbours(const Position &minedPosition)
 	{
 		currentNeighbour.row = minedPosition.row + directionRow[neighbour];
 		currentNeighbour.column = minedPosition.column + directionColumn[neighbour];
-		if (checkBorders(currentNeighbour) == true && map[currentNeighbour.row][currentNeighbour.column].isMine() == false)
+
+		if (checkBorders(currentNeighbour) == true && isSquareMine(currentNeighbour) == false)
 		{
-			map[currentNeighbour.row][currentNeighbour.column].incrementValue();
+			incrementSquare(currentNeighbour);
 		}
 	}
+}
+
+void Map::incrementSquare(const Position &neighbour)
+{
+	map[neighbour.row][neighbour.column].incrementValue();
+}
+
+void Map::placeMine(const Position &currentPosition)
+{
+	map[currentPosition.row][currentPosition.column].placeMine();
 }
 
 bool Map::checkBorders(const Position &currentPosition)
@@ -413,6 +509,11 @@ bool Map::checkBorders(const Position &currentPosition)
 	else return false;
 }
 
+char Map::getSquareValue(const Position &currentPosition)
+{
+	return map[currentPosition.row][currentPosition.column].getValue();
+}
+
 inline bool Map::isSquareCovered(const Position &currentPosition)
 {
 	return map[currentPosition.row][currentPosition.column].isCovered();
@@ -421,4 +522,9 @@ inline bool Map::isSquareCovered(const Position &currentPosition)
 inline bool Map::isSquareFlagged(const Position &currentPosition)
 {
 	return map[currentPosition.row][currentPosition.column].isFlagged();
+}
+
+inline bool Map::isSquareMine(const Position &currentPosition)
+{
+	return map[currentPosition.row][currentPosition.column].isMine();
 }

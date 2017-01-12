@@ -9,7 +9,7 @@
 #define MAX_NO_BOMBS			668
 #define MIN_ROWS				5
 #define MIN_COLUMNS				5
-#define MIN_NO_BOMBS			5
+#define MIN_NO_BOMBS			2
 
 #define EASY_NO_ROWS			9
 #define EASY_NO_COLUMNS			9

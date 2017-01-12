@@ -21,6 +21,11 @@ int main()
 			map.lost = 1 ^ map.lost;
 			gameState = 0;
 		}
+		else if (map.won)
+		{
+			map.won = 1 ^ map.won;
+			gameState = 0;
+		}
 		switch (gameState)
 		{
 		case 0:
@@ -41,7 +46,13 @@ int main()
 			break;
 		case 3:
 			map.printOnScreen();
-			map.processInput();
+			if (map.checkWinCondition() == true)
+			{
+				map.won = 1 ^ map.won;
+				gameState = 0;
+				continue;
+			}
+			map.processInput(gameState);
 			break;
 		}
 	}

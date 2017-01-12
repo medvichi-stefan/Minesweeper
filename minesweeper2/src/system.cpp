@@ -203,17 +203,22 @@ void processCustomDimension(short &rows, short &columns, short &bombs)
 	} while (columns < MIN_COLUMNS || columns > MAX_COLUMNS);
 
 	y += 1;
+	short newMaxBombs = MAX_NO_BOMBS;
 	do
 	{
+		if (MAX_NO_BOMBS >= rows * columns)
+		{
+			newMaxBombs = rows * columns - 1;
+		}
 		gotoXY(x, y);
-		printf("Number of bombs (%d -> %d):", MIN_NO_BOMBS, MAX_NO_BOMBS);
+		printf("Number of bombs (%d -> %d):", MIN_NO_BOMBS, newMaxBombs);
 		readPlayerInput(playerInput, INPUT_SIZE_DIMENSION);
 		bombs = getNumberFromString(playerInput);
-		if (columns < MIN_NO_BOMBS || columns > MAX_NO_BOMBS)
+		if (bombs < MIN_NO_BOMBS || bombs > newMaxBombs)
 		{
 			//send feedback
 		}
-	} while (columns < MIN_NO_BOMBS || columns > MAX_NO_BOMBS);
+	} while (bombs < MIN_NO_BOMBS || bombs > newMaxBombs);
 }
 
 void processLeaderboardInput()
