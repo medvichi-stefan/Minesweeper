@@ -23,6 +23,7 @@
 #define HARD_NO_COLUMNS			30
 #define HARD_NO_BOMBS			99
 
+#define MAX_MAIN_MENU_BUTTONS	2
 #define MAX_INPUT_SIZE			16
 #define INPUT_SIZE				5
 #define INPUT_SIZE_DIMENSION	4
@@ -46,9 +47,7 @@ void setTextColor(const int &color);
 void readPlayerInput(char *playerInput, const int &inputSizeLimit);
 void processMainMenuInput(char &gameState);
 void processSettingsInput(char &gameState, short &rows, short &columns, short &bombs);
-void processLeaderboardInput();
 void processCustomDimension(short &rows, short &columns, short &bombs);
-
 
 void printMainMenu();
 void printSettingsMenu();

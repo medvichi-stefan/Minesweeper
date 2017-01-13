@@ -34,16 +34,12 @@ int main()
 		case 1:
 			printSettingsMenu();
 			processSettingsInput(gameState, mapRows, mapColumns, mapBombs);
-			if (gameState == 3)
+			if (gameState == 2)
 			{
 				map.initialize(mapRows, mapColumns, mapBombs);
 			}
 			break;
 		case 2:
-			printLeaderboard();
-			processLeaderboardInput();
-			break;
-		case 3:
 			map.printOnScreen();
 			if (map.checkWinCondition() == true)
 			{

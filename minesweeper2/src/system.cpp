@@ -116,10 +116,6 @@ void processMainMenuInput(char &gameState)
 	}
 	else if (playerInput[0] == '2')
 	{
-		gameState = 2;
-	}
-	else if (playerInput[0] == '3')
-	{
 		quit();
 	}
 }
@@ -133,7 +129,7 @@ void processSettingsInput(char &gameState, short &rows, short &columns, short &b
 	{
 		return;
 	}
-	gameState = 3;
+	gameState = 2;
 	if (playerInput[0] == '1')
 	{
 		rows = EASY_NO_ROWS;
@@ -214,7 +210,7 @@ void processCustomDimension(short &rows, short &columns, short &bombs)
 	short newMaxBombs = MAX_NO_BOMBS;
 	if (MAX_NO_BOMBS >= rows * columns)
 	{
-		newMaxBombs = rows * columns - 1;
+		newMaxBombs = (6 * rows * columns) / 10;
 	}
 	do
 	{
@@ -234,11 +230,6 @@ void processCustomDimension(short &rows, short &columns, short &bombs)
 	} while (bombs < MIN_NO_BOMBS || bombs > newMaxBombs);
 }
 
-void processLeaderboardInput()
-{
-	exit(0);
-}
-
 void printMainMenu()
 {
 	clearConsole();
@@ -247,16 +238,16 @@ void printMainMenu()
 	gotoXY(x, y);
 	printf("Main Menu");
 	
-	char text[][20] = { "1. Play", "2. Leaderboard", "3. Quit"};
+	char text[][20] = { "Play", "Quit"};
 	int i;
 
-	for (i = 0, y += 2; i < 3; ++i, y += 2)
+	for (i = 0, y += 2; i < MAX_MAIN_MENU_BUTTONS; ++i, y += 2)
 	{
 		gotoXY(x, y);
-		printf("%s", text[i]);
+		printf("%d. %s", i + 1, text[i]);
 	}
 	gotoXY(x, y);
-	printf("Choose [1-3]:");
+	printf("Choose [1-%d]:", MAX_MAIN_MENU_BUTTONS);
 }
 
 void printSettingsMenu()
