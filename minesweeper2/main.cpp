@@ -1,7 +1,6 @@
 #include "include/stdafx.h"
 #include "include/map.h"
 
-int windowRows, windowColumns;
 Map map;
 
 int main() 

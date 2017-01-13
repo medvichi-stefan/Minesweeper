@@ -42,14 +42,13 @@ void Map::endGame(const bool &end)
 		lost = true;
 	}
 	printGameEndMessage(end);
-	revealMap();
 	Sleep(5000);
 }
 
 void Map::revealMap()
 {
 	revealAllSquares();
-	print(MAP_POSITION_X, MAP_POSITION_Y);
+	print(MAP_POSITION_X, MAP_POSITION_Y + 3);
 }
 
 bool Map::checkWinCondition()
@@ -231,7 +230,6 @@ void Map::printGameEndMessage(const bool &end)
 {
 	clearConsole();
 	int x, y;
-	char text[][32] = { "CONGRATULATIONS, YOU WON!!", "You LOST!" };
 	x = MAP_POSITION_X; y = MAP_POSITION_Y - 5;
 	gotoXY(x, y);
 	bool message;
@@ -245,12 +243,14 @@ void Map::printGameEndMessage(const bool &end)
 		message = 1;
 		setTextColor(COLOR_RED);
 	}
+	char text[][32] = { "CONGRATULATIONS, YOU WON!", "You LOST!" };
 	printf("%s", text[message]);
 	setTextColor(COLOR_WHITE);
 	if (end == 0)
 	{
 		printTimeElapsed();
 	}
+	revealMap();
 }
 
 void Map::processInput(char &gameState)

@@ -35,9 +35,9 @@
 void initializeSystem();
 void quit();
 void gotoXY(const int &x, const int &y);
-void clearConsole();
-void getWindowSize(int &rows, int &columns);
-void setWindowSize(const int &rows, const int &columns);
+void clearConsole(COORD position = {0, 0});
+COORD getConsoleCursorPosition();
+short getNumberOfDigits(short number);
 void setCursorSize(const unsigned short int &size);
 void setCursorVisible(const bool &show);
 void setFont(const unsigned short &x, const unsigned short &y);
@@ -48,7 +48,6 @@ void processMainMenuInput(char &gameState);
 void processSettingsInput(char &gameState, short &rows, short &columns, short &bombs);
 void processLeaderboardInput();
 void processCustomDimension(short &rows, short &columns, short &bombs);
-void printFeedback(const int &posX, const int &posY, const char *feedbackText);
 
 
 void printMainMenu();

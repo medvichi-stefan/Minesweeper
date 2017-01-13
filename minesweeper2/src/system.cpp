@@ -20,47 +20,44 @@ void gotoXY(const int &x, const int &y)
 	return;
 }
 
-void clearConsole()
+void clearConsole(COORD position)
 {
 	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	COORD coord = { 0, 0 };
 	DWORD count;
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 
 	if (GetConsoleScreenBufferInfo(hStdOut, &csbi))
 	{
 		// 32 = space
-		FillConsoleOutputCharacter(hStdOut, (CHAR)32, csbi.dwSize.X * csbi.dwSize.Y, coord, &count);
-		FillConsoleOutputAttribute(hStdOut, csbi.wAttributes, csbi.dwSize.X * csbi.dwSize.Y, coord, &count);
-		SetConsoleCursorPosition(hStdOut, coord);
+		FillConsoleOutputCharacter(hStdOut, (CHAR)32, csbi.dwSize.X * csbi.dwSize.Y, position, &count);
+		FillConsoleOutputAttribute(hStdOut, csbi.wAttributes, csbi.dwSize.X * csbi.dwSize.Y, position, &count);
+		SetConsoleCursorPosition(hStdOut, position);
 	}
 }
 
-void getWindowSize(int &rows, int &columns)
+COORD getConsoleCursorPosition()
 {
+	COORD position = { 0, 0 };
+	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-	columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-	rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+	if (GetConsoleScreenBufferInfo(hStdOut, &csbi))
+	{
+		position.X = csbi.dwCursorPosition.X;
+		position.Y = csbi.dwCursorPosition.Y;
+	}
+	return position;
 }
 
-void setWindowSize(const int &rows, const int &columns)
+short getNumberOfDigits(short number)
 {
-	COORD coord;
-	coord.X = rows;
-	coord.Y = columns;
-
-	SMALL_RECT Rect;
-	Rect.Top = 0;
-	Rect.Left = 0;
-	Rect.Bottom = columns - 1;
-	Rect.Right = rows - 1;
-
-	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	SetConsoleScreenBufferSize(hStdOut, coord);
-	SetConsoleWindowInfo(hStdOut, TRUE, &Rect);
-
+	short noDigits = 0;
+	do
+	{
+		noDigits++;
+		number /= 10;
+	} while (number);
+	return noDigits;
 }
 
 void setCursorSize(const unsigned short int &size)
@@ -172,51 +169,67 @@ void processCustomDimension(short &rows, short &columns, short &bombs)
 	x = MENU_POSITION_X; y = MENU_POSITION_Y;
 
 	clearConsole();
+
 	gotoXY(x, y);
+	
 	printf("Choose dimensions:");
 	y += 1;
+	COORD newConsolePosition = {0, 0};
 	do
 	{
+		rows = 0;
 		gotoXY(x, y);
 		printf("Number of rows (%d->%d): ", MIN_ROWS, MAX_ROWS);
+		newConsolePosition = getConsoleCursorPosition();
 		readPlayerInput(playerInput, INPUT_SIZE_DIMENSION);
-		playerInput[2] = '\0';
-		rows = getNumberFromString(playerInput);
+		if (strlen(playerInput) <= getNumberOfDigits(MAX_ROWS))
+		{
+			rows = getNumberFromString(playerInput);
+		}
 		if (rows < MIN_ROWS || rows > MAX_ROWS)
 		{
-			// send feedback
+			clearConsole(newConsolePosition);
 		}
 	} while (rows < MIN_ROWS || rows > MAX_ROWS);
 	
 	y += 1;
 	do
 	{
+		columns = 0;
 		gotoXY(x, y);
 		printf("Number of columns (%d->%d):", MIN_COLUMNS, MAX_COLUMNS);
+		newConsolePosition = getConsoleCursorPosition();
 		readPlayerInput(playerInput, INPUT_SIZE_DIMENSION);
-		playerInput[2] = '\0';
-		columns = getNumberFromString(playerInput);
-		if (columns < MIN_COLUMNS && columns > MAX_COLUMNS)
+		if (strlen(playerInput) <= getNumberOfDigits(MAX_COLUMNS))
 		{
-			//send feedback
+			columns = getNumberFromString(playerInput);
+		}
+		if (columns < MIN_COLUMNS || columns > MAX_COLUMNS)
+		{
+			clearConsole(newConsolePosition);
 		}
 	} while (columns < MIN_COLUMNS || columns > MAX_COLUMNS);
 
 	y += 1;
 	short newMaxBombs = MAX_NO_BOMBS;
+	if (MAX_NO_BOMBS >= rows * columns)
+	{
+		newMaxBombs = rows * columns - 1;
+	}
 	do
 	{
-		if (MAX_NO_BOMBS >= rows * columns)
-		{
-			newMaxBombs = rows * columns - 1;
-		}
+		bombs = 0;	
 		gotoXY(x, y);
 		printf("Number of bombs (%d -> %d):", MIN_NO_BOMBS, newMaxBombs);
+		newConsolePosition = getConsoleCursorPosition();
 		readPlayerInput(playerInput, INPUT_SIZE_DIMENSION);
-		bombs = getNumberFromString(playerInput);
+		if (strlen(playerInput) <= getNumberOfDigits(newMaxBombs))
+		{
+			bombs = getNumberFromString(playerInput);
+		}
 		if (bombs < MIN_NO_BOMBS || bombs > newMaxBombs)
 		{
-			//send feedback
+			clearConsole(newConsolePosition);
 		}
 	} while (bombs < MIN_NO_BOMBS || bombs > newMaxBombs);
 }
@@ -224,11 +237,6 @@ void processCustomDimension(short &rows, short &columns, short &bombs)
 void processLeaderboardInput()
 {
 	exit(0);
-}
-
-void printFeedback(const int &posX, const int &posY, const char *feedbackText)
-{
-
 }
 
 void printMainMenu()
